@@ -1,0 +1,179 @@
+-- Table: public.carriage
+
+-- DROP TABLE public.carriage;
+
+CREATE TABLE public.carriage
+(
+    type character varying(10) COLLATE pg_catalog."default" NOT NULL,
+    "number" integer NOT NULL DEFAULT 1,
+    id_carriage character varying(5) COLLATE pg_catalog."default" NOT NULL,
+    fk_id_route_to_train integer NOT NULL,
+    CONSTRAINT carriage_pkey PRIMARY KEY (id_carriage),
+    CONSTRAINT unique_train_number UNIQUE (fk_id_route_to_train, "number"),
+    CONSTRAINT fk_carriage_train_on_route FOREIGN KEY (fk_id_route_to_train)
+        REFERENCES public.route_to_train (id_route_to_train) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.carriage
+    OWNER to postgres;
+    
+    
+    
+    
+    
+    -- Table: public.client 
+
+-- DROP TABLE public."client ";
+
+CREATE TABLE public."client "
+(
+    id_client integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+    "e-mail" character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    login character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    full_name character varying(40) COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT "client _pkey" PRIMARY KEY (id_client),
+    CONSTRAINT "e-mail_unique" UNIQUE ("e-mail")
+        INCLUDE("e-mail"),
+    CONSTRAINT login_unique UNIQUE (login)
+        INCLUDE(login)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public."client "
+    OWNER to postgres;
+    
+    
+    
+    -- Table: public.place
+
+-- DROP TABLE public.place;
+
+CREATE TABLE public.place
+(
+    id_place integer NOT NULL DEFAULT nextval('place_id_place_seq'::regclass),
+    number_place integer NOT NULL,
+    carriage_id character varying(5) COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT place_pkey PRIMARY KEY (id_place),
+    CONSTRAINT number_carriage UNIQUE (number_place, carriage_id),
+    CONSTRAINT fk_place_to_carriage FOREIGN KEY (carriage_id)
+        REFERENCES public.carriage (id_carriage) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.place
+    OWNER to postgres;
+    
+    
+    
+    
+   -- Table: public.route
+
+-- DROP TABLE public.route;
+
+CREATE TABLE public.route
+(
+    id_route integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+    place_of_departure character varying(30) COLLATE pg_catalog."default" NOT NULL,
+    place_of_arrival character varying(30) COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT route_pkey PRIMARY KEY (id_route)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.route
+    OWNER to postgres;
+    
+    
+    
+    
+    -- Table: public.route_to_train
+
+-- DROP TABLE public.route_to_train;
+
+CREATE TABLE public.route_to_train
+(
+    id_route_to_train integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+    id_route integer NOT NULL DEFAULT 1,
+    id_train character varying(5) COLLATE pg_catalog."default" NOT NULL DEFAULT 0,
+    arrive_time time without time zone NOT NULL,
+    depart_time time without time zone NOT NULL,
+    CONSTRAINT route_to_train_pkey PRIMARY KEY (id_route_to_train),
+    CONSTRAINT route_to_train_unique UNIQUE (id_route, id_train),
+    CONSTRAINT fk_route_to_train FOREIGN KEY (id_route)
+        REFERENCES public.route (id_route) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID,
+    CONSTRAINT fk_train_to_route FOREIGN KEY (id_train)
+        REFERENCES public.train (id_train) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.route_to_train
+    OWNER to postgres;
+    
+    
+    
+    -- Table: public.ticket
+
+-- DROP TABLE public.ticket;
+
+CREATE TABLE public.ticket
+(
+    id_ticket integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+    fk_client_id integer NOT NULL,
+    fk_id_place integer NOT NULL,
+    price money NOT NULL,
+    buy_date timestamp without time zone NOT NULL,
+    privilege character varying COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT ticket_pkey PRIMARY KEY (id_ticket),
+    CONSTRAINT fk_pk_client UNIQUE (fk_client_id),
+    CONSTRAINT fk_pk_id_place UNIQUE (fk_id_place),
+    CONSTRAINT fk_id_client FOREIGN KEY (fk_client_id)
+        REFERENCES public."client " (id_client) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID,
+    CONSTRAINT fk_id_place FOREIGN KEY (fk_id_place)
+        REFERENCES public.place (id_place) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.ticket
+    OWNER to postgres;
+    
+    
+    
+    -- Table: public.train
+
+-- DROP TABLE public.train;
+
+CREATE TABLE public.train
+(
+    id_train character varying(5) COLLATE pg_catalog."default" NOT NULL DEFAULT 0,
+    max_carriage integer NOT NULL,
+    CONSTRAINT train_pkey PRIMARY KEY (id_train)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.train
+    OWNER to postgres;
