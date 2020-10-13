@@ -1,2 +1,2 @@
 # Database
-Repo for labs. Bikerei KV-82
+Bikerei KV-82 Labs
